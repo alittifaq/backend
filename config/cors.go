@@ -1,12 +1,6 @@
 package config
 
-import (
-	"strings"
-
-	"github.com/gofiber/fiber/v2/middleware/cors"
-)
-
-var origins = []string{
+var Origins = []string{
 	"https://naskah.bukupedia.co.id",
 	"https://auth.ulbi.ac.id",
 	"https://sip.ulbi.ac.id",
@@ -19,7 +13,7 @@ var origins = []string{
 	"https://pmb.ulbi.ac.id",
 }
 
-var headers = []string{
+var Headers = []string{
 	"Origin",
 	"Content-Type",
 	"Accept",
@@ -30,11 +24,4 @@ var headers = []string{
 	"Access-Control-Allow-Origin",
 	"Bearer",
 	"X-Requested-With",
-}
-
-var Cors = cors.Config{
-	AllowOrigins:     strings.Join(origins[:], ","),
-	AllowHeaders:     strings.Join(headers[:], ","),
-	ExposeHeaders:    "Content-Length",
-	AllowCredentials: true,
 }
