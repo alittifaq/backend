@@ -22,7 +22,7 @@ func URL(w http.ResponseWriter, r *http.Request) {
 	// 	controller.GetNewToken(w, r)
 	case method == "POST" && helper.URLParam(path, "data/produk"):
 		controller.PostProduk(w, r)
-		// default:
-		// 	controller.NotFound(w, r)
+	case method == "DELETE" && helper.URLParam(path, "data/produk"):
+		controller.DeleteProduk(w, r)
 	}
 }
