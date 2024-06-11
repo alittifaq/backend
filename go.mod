@@ -4,7 +4,6 @@ go 1.22.3
 
 require (
 	github.com/GoogleCloudPlatform/functions-framework-go v1.8.1
-	github.com/whatsauth/itmodel v0.0.1
 	go.mongodb.org/mongo-driver v1.15.0
 )
 
