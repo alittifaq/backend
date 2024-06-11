@@ -16,13 +16,13 @@ func URL(w http.ResponseWriter, r *http.Request) {
 
 	var method, path string = r.Method, r.URL.Path
 	switch {
-	case method == "GET" && path == "/":
-		controller.GetHome(w, r)
-	case method == "GET" && path == "/refresh/token":
-		controller.GetNewToken(w, r)
+	// case method == "GET" && path == "/":
+	// 	controller.GetHome(w, r)
+	// case method == "GET" && path == "/refresh/token":
+	// 	controller.GetNewToken(w, r)
 	case method == "POST" && helper.URLParam(path, "/webhook/nomor/:nomorwa"):
-		controller.PostInboxNomor(w, r)
-	default:
-		controller.NotFound(w, r)
+		controller.PostProduk(w, r)
+		// default:
+		// 	controller.NotFound(w, r)
 	}
 }
