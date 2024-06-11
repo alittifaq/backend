@@ -33,8 +33,9 @@ jobs:
             --gen2 \
             --runtime=go122 \
             --trigger-http \
+            --service-account new-compute-service-account@blkkalittifaq-426014.iam.gserviceaccount.com \
+            --project blkkalittifaq-426014 \
             --set-env-vars=MONGOSTRING='${{ secrets.MONGOSTRING }}'
-            --service-account new-compute-service-account@blkkalittifaq-426014.iam.gserviceaccount.com
       - name: 'Cek eksistensi fungsi'
         run: 'gcloud functions describe blkkalittifaq --region=asia-southeast2'
       - name: 'Cek log debugging'
