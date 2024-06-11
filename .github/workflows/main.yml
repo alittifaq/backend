@@ -34,6 +34,7 @@ jobs:
             --runtime=go122 \
             --trigger-http \
             --set-env-vars=MONGOSTRING='${{ secrets.MONGOSTRING }}'
+            --service-account blkkalittifaq-426014@appspot.gserviceaccount.com
       - name: 'Cek eksistensi fungsi'
         run: 'gcloud functions describe blkkalittifaq --region=asia-southeast2'
       - name: 'Cek log debugging'
