@@ -13,7 +13,7 @@ import (
 )
 
 func GetProduk(respw http.ResponseWriter, req *http.Request) {
-	produk, err := atdb.GetAllDoc[[]model.Produk](config.Mongoconn, "produk", bson.M{})
+	produk, err := atdb.GetAllDoc[[]model.Product](config.Mongoconn, "product", bson.M{})
 	if err != nil {
 		helper.WriteJSON(respw, http.StatusInternalServerError, err.Error())
 		return
@@ -22,17 +22,17 @@ func GetProduk(respw http.ResponseWriter, req *http.Request) {
 }
 
 func PostProduk(respw http.ResponseWriter, req *http.Request) {
-	var newProduk model.Produk
+	var newProduk model.Product
 	if err := json.NewDecoder(req.Body).Decode(&newProduk); err != nil {
 		helper.WriteJSON(respw, http.StatusBadRequest, err.Error())
 		return
 	}
 	newProduk.ID = primitive.NewObjectID()
-	if _, err := atdb.InsertOneDoc(config.Mongoconn, "produk", newProduk); err != nil {
+	if _, err := atdb.InsertOneDoc(config.Mongoconn, "product", newProduk); err != nil {
 		helper.WriteJSON(respw, http.StatusInternalServerError, err.Error())
 		return
 	}
-	helper.WriteJSON(respw, http.StatusCreated, newProduk)
+	helper.WriteJSON(respw, http.StatusOK, "Produk Inserted")
 }
 
 func PutProduk(respw http.ResponseWriter, req *http.Request) {
@@ -42,14 +42,14 @@ func PutProduk(respw http.ResponseWriter, req *http.Request) {
 		helper.WriteJSON(respw, http.StatusBadRequest, "Invalid ID")
 		return
 	}
-	var updatedProduk model.Produk
+	var updatedProduk model.Product
 	if err := json.NewDecoder(req.Body).Decode(&updatedProduk); err != nil {
 		helper.WriteJSON(respw, http.StatusBadRequest, err.Error())
 		return
 	}
 	filter := bson.M{"_id": objectID}
 	update := bson.M{"$set": updatedProduk}
-	if _, err := atdb.UpdateDoc(config.Mongoconn, "produk", filter, update); err != nil {
+	if _, err := atdb.UpdateDoc(config.Mongoconn, "product", filter, update); err != nil {
 		helper.WriteJSON(respw, http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -64,7 +64,7 @@ func DeleteProduk(respw http.ResponseWriter, req *http.Request) {
 		return
 	}
 	filter := primitive.M{"_id": objectID}
-	err = atdb.DeleteOneDoc(config.Mongoconn, "produk", filter)
+	err = atdb.DeleteOneDoc(config.Mongoconn, "product", filter)
 	if err != nil {
 		helper.WriteJSON(respw, http.StatusInternalServerError, err.Error())
 		return
