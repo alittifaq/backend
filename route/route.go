@@ -20,7 +20,7 @@ func URL(w http.ResponseWriter, r *http.Request) {
 	// 	controller.GetHome(w, r)
 	// case method == "GET" && path == "/refresh/token":
 	// 	controller.GetNewToken(w, r)
-	case method == "POST" && helper.URLParam(path, "/webhook/nomor/:nomorwa"):
+	case method == "POST" && helper.URLParam(path, "data/produk"):
 		controller.PostProduk(w, r)
 		// default:
 		// 	controller.NotFound(w, r)
