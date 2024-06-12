@@ -32,7 +32,7 @@ func PostProduk(respw http.ResponseWriter, req *http.Request) {
 		helper.WriteJSON(respw, http.StatusInternalServerError, err.Error())
 		return
 	}
-	helper.WriteJSON(respw, http.StatusOK, "Produk Inserted")
+	helper.WriteJSON(respw, http.StatusOK, newProduk)
 }
 
 func PutProduk(respw http.ResponseWriter, req *http.Request) {
@@ -92,5 +92,5 @@ func PostGallery (respw http.ResponseWriter, req *http.Request) {
 		helper.WriteJSON(respw, http.StatusInternalServerError, err.Error())
 		return
 	}
-	helper.WriteJSON(respw, http.StatusOK, "Gallery Inserted")
+	helper.WriteJSON(respw, http.StatusOK, newGallery)
 }
