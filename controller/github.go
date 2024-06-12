@@ -25,9 +25,9 @@ func PostUploadGithub(respw http.ResponseWriter, req *http.Request) {
 	// Parse the form file
 	_, header, err := req.FormFile("file")
 	if err != nil {
-		respn.Info = helper.GetSecretFromHeader(req)
+		
 		respn.Response = err.Error()
-		helper.WriteJSON(respw, http.StatusForbidden, respn)
+		helper.WriteJSON(respw, http.StatusBadRequest, respn)
 		return
 	}
 
@@ -45,7 +45,7 @@ func PostUploadGithub(respw http.ResponseWriter, req *http.Request) {
 	if err != nil{
 	respn.Info = helper.GetSecretFromHeader(req)
 		respn.Response = err.Error()
-		helper.WriteJSON(respw, http.StatusForbidden, respn)
+		helper.WriteJSON(respw, http.StatusConflict, respn)
 		return
 	}
 
@@ -53,7 +53,7 @@ func PostUploadGithub(respw http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		respn.Info = "gagal upload github"
 		respn.Response = err.Error()
-		helper.WriteJSON(respw, http.StatusForbidden, content)
+		helper.WriteJSON(respw, http.StatusEarlyHints, content)
 		return
 	}
 
