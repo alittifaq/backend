@@ -80,3 +80,17 @@ func GetGallery(respw http.ResponseWriter, req *http.Request) {
 	}
 	helper.WriteJSON(respw, http.StatusOK, gallery)
 }
+
+func PostGallery (respw http.ResponseWriter, req *http.Request) {
+	var newGallery model.Gallery
+	if err := json.NewDecoder(req.Body).Decode(&newGallery); err != nil {
+		helper.WriteJSON(respw, http.StatusBadRequest, err.Error())
+		return
+	}
+	newGallery.ID = primitive.NewObjectID()
+	if _, err := atdb.InsertOneDoc(config.Mongoconn, "gallery", newGallery); err != nil {
+		helper.WriteJSON(respw, http.StatusInternalServerError, err.Error())
+		return
+	}
+	helper.WriteJSON(respw, http.StatusOK, "Gallery Inserted")
+}

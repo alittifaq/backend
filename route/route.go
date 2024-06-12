@@ -5,7 +5,6 @@ import (
 
 	"github.com/gocroot/config"
 	"github.com/gocroot/controller"
-	"github.com/gocroot/helper"
 )
 
 func URL(w http.ResponseWriter, r *http.Request) {
@@ -22,9 +21,12 @@ func URL(w http.ResponseWriter, r *http.Request) {
 		controller.GetProduk(w, r)
 	// case method == "GET" && path == "/refresh/token":
 	// 	controller.GetNewToken(w, r)
-	case method == "POST" && helper.URLParam(path, "data/produk"):
+	case method == "POST" && path == "data/produk":
 		controller.PostProduk(w, r)
-	case method == "DELETE" && helper.URLParam(path, "data/produk"):
+	case method == "POST" && path == "data/gallery":
+		controller.PostGallery(w, r)
+	case method == "DELETE" && path == "data/produk":
 		controller.DeleteProduk(w, r)
 	}
+
 }
