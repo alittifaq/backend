@@ -25,7 +25,7 @@ func PostUploadGithub(respw http.ResponseWriter, req *http.Request) {
 	// Parse the form file
 	_, header, err := req.FormFile("image")
 	if err != nil {
-		
+
 		respn.Response = err.Error()
 		helper.WriteJSON(respw, http.StatusBadRequest, respn)
 		return
@@ -41,9 +41,9 @@ func PostUploadGithub(respw http.ResponseWriter, req *http.Request) {
 	}
 
 	// save to github
-	gh, err:=atdb.GetOneDoc[model.Ghcreates](config.Mongoconn, "github", bson.M{})
-	if err != nil{
-	respn.Info = helper.GetSecretFromHeader(req)
+	gh, err := atdb.GetOneDoc[model.Ghcreates](config.Mongoconn, "github", bson.M{})
+	if err != nil {
+		respn.Info = helper.GetSecretFromHeader(req)
 		respn.Response = err.Error()
 		helper.WriteJSON(respw, http.StatusConflict, respn)
 		return
@@ -56,8 +56,8 @@ func PostUploadGithub(respw http.ResponseWriter, req *http.Request) {
 		helper.WriteJSON(respw, http.StatusEarlyHints, content)
 		return
 	}
-	respn.Info=*content.URL
-	respn.Response=*content.HTMLURL
+	respn.Info = *content.Content.Name
+	respn.Response = *content.Content.Path
 	helper.WriteJSON(respw, http.StatusOK, respn)
 
 }
