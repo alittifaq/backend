@@ -71,3 +71,12 @@ func DeleteProduk(respw http.ResponseWriter, req *http.Request) {
 	}
 	helper.WriteJSON(respw, http.StatusOK, "Produk deleted")
 }
+
+func GetGallery(respw http.ResponseWriter, req *http.Request) {
+	gallery, err := atdb.GetAllDoc[[]model.Gallery](config.Mongoconn, "gallery", bson.M{})
+	if err != nil {
+		helper.WriteJSON(respw, http.StatusInternalServerError, err.Error())
+		return
+	}
+	helper.WriteJSON(respw, http.StatusOK, gallery)
+}
