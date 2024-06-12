@@ -5,6 +5,7 @@ import (
 
 	"github.com/gocroot/config"
 	"github.com/gocroot/controller"
+	"github.com/gocroot/helper"
 )
 
 func URL(w http.ResponseWriter, r *http.Request) {
@@ -19,8 +20,8 @@ func URL(w http.ResponseWriter, r *http.Request) {
 		controller.GetGallery(w, r)
 	case method == "GET" && path == "/data/product":
 		controller.GetProduk(w, r)
-	// case method == "GET" && path == "/refresh/token":
-	// 	controller.GetNewToken(w, r)
+	case method == "POST" && helper.URLParam(path, "/upload/:path"):
+		controller.PostUploadGithub(w, r)
 	case method == "POST" && path == "/data/product":
 		controller.PostProduk(w, r)
 	case method == "POST" && path == "/data/gallery":

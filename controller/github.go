@@ -5,7 +5,10 @@ import (
 
 	"github.com/gocroot/config"
 	"github.com/gocroot/helper"
+	"github.com/gocroot/model"
+	"go.mongodb.org/mongo-driver/bson"
 
+	"github.com/gocroot/helper/atdb"
 	"github.com/gocroot/helper/ghupload"
 	"github.com/whatsauth/itmodel"
 )
@@ -38,7 +41,15 @@ func PostUploadGithub(respw http.ResponseWriter, req *http.Request) {
 	}
 
 	// save to github
-	content, _, err := ghupload.GithubUpload(config.GitHubAccessToken, config.GitHubAuthorName, config.GitHubAuthorEmail, header, "repoulbi", "sk", pathFile, false)
+	gh, err:=atdb.GetOneDoc[model.Ghcreates](config.Mongoconn, "github", bson.M{})
+	if err != nil{
+	respn.Info = helper.GetSecretFromHeader(req)
+		respn.Response = err.Error()
+		helper.WriteJSON(respw, http.StatusForbidden, respn)
+		return
+	}
+
+	content, _, err := ghupload.GithubUpload(gh.GitHubAccessToken, gh.GitHubAuthorName, gh.GitHubAuthorEmail, header, "alittifaq", "cdn", pathFile, false)
 	if err != nil {
 		respn.Info = "gagal upload github"
 		respn.Response = err.Error()
