@@ -23,7 +23,7 @@ func PostUploadGithub(respw http.ResponseWriter, req *http.Request) {
 	// 	return
 	// }
 	// Parse the form file
-	_, header, err := req.FormFile("file")
+	_, header, err := req.FormFile("image")
 	if err != nil {
 		
 		respn.Response = err.Error()
