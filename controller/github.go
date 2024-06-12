@@ -56,7 +56,8 @@ func PostUploadGithub(respw http.ResponseWriter, req *http.Request) {
 		helper.WriteJSON(respw, http.StatusEarlyHints, content)
 		return
 	}
-
+	respn.Info=*content.URL
+	respn.Response=*content.HTMLURL
 	helper.WriteJSON(respw, http.StatusOK, respn)
 
 }
