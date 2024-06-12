@@ -6,7 +6,9 @@ import (
 
 	"github.com/gocroot/config"
 	"github.com/gocroot/controller"
+	"github.com/gocroot/handlers"
 	"github.com/gocroot/helper"
+	"github.com/gorilla/mux"
 )
 
 func URL(w http.ResponseWriter, r *http.Request) {
@@ -25,4 +27,13 @@ func URL(w http.ResponseWriter, r *http.Request) {
 	case method == "DELETE" && helper.URLParam(path, "data/produk"):
 		controller.DeleteProduk(w, r)
 	}
+}
+
+func RegisterRoutes() *mux.Router {
+	router := mux.NewRouter()
+
+	router.HandleFunc("/api/register", handlers.RegisterHandler).Methods("POST")
+	router.HandleFunc("/api/login", handlers.LoginHandler).Methods("POST")
+
+	return router
 }
