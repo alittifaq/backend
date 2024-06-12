@@ -13,7 +13,7 @@ import (
 	"github.com/whatsauth/itmodel"
 )
 
-func PostUploadGithub(respw http.ResponseWriter, req *http.Request) {
+func PostUploadGithub(w http.ResponseWriter, r *http.Request) {
 	var respn itmodel.Response
 	// _, err := watoken.Decode(config.PublicKeyWhatsAuth, helper.GetLoginFromHeader(req))
 	// if err != nil {
@@ -23,16 +23,16 @@ func PostUploadGithub(respw http.ResponseWriter, req *http.Request) {
 	// 	return
 	// }
 	// Parse the form file
-	_, header, err := req.FormFile("image")
+	_, header, err := r.FormFile("image")
 	if err != nil {
 
 		respn.Response = err.Error()
-		helper.WriteJSON(respw, http.StatusBadRequest, respn)
+		helper.WriteJSON(w, http.StatusBadRequest, respn)
 		return
 	}
 
 	//folder := ctx.Params("folder")
-	folder := helper.GetParam(req)
+	folder := helper.GetParam(r)
 	var pathFile string
 	if folder != "" {
 		pathFile = folder + "/" + header.Filename
@@ -43,9 +43,9 @@ func PostUploadGithub(respw http.ResponseWriter, req *http.Request) {
 	// save to github
 	gh, err := atdb.GetOneDoc[model.Ghcreates](config.Mongoconn, "github", bson.M{})
 	if err != nil {
-		respn.Info = helper.GetSecretFromHeader(req)
+		respn.Info = helper.GetSecretFromHeader(r)
 		respn.Response = err.Error()
-		helper.WriteJSON(respw, http.StatusConflict, respn)
+		helper.WriteJSON(w, http.StatusConflict, respn)
 		return
 	}
 
@@ -53,11 +53,11 @@ func PostUploadGithub(respw http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		respn.Info = "gagal upload github"
 		respn.Response = err.Error()
-		helper.WriteJSON(respw, http.StatusEarlyHints, content)
+		helper.WriteJSON(w, http.StatusEarlyHints, content)
 		return
 	}
 	respn.Info = *content.Content.Name
 	respn.Response = *content.Content.Path
-	helper.WriteJSON(respw, http.StatusOK, respn)
+	helper.WriteJSON(w, http.StatusOK, respn)
 
 }
