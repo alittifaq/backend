@@ -21,11 +21,11 @@ func URL(w http.ResponseWriter, r *http.Request) {
 		controller.GetProduk(w, r)
 	// case method == "GET" && path == "/refresh/token":
 	// 	controller.GetNewToken(w, r)
-	case method == "POST" && path == "data/produk":
+	case method == "POST" && path == "/data/product":
 		controller.PostProduk(w, r)
-	case method == "POST" && path == "data/gallery":
+	case method == "POST" && path == "/data/gallery":
 		controller.PostGallery(w, r)
-	case method == "DELETE" && path == "data/produk":
+	case method == "DELETE" && path == "/data/produk":
 		controller.DeleteProduk(w, r)
 	}
 
