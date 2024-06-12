@@ -3,16 +3,9 @@ package config
 import "net/http"
 
 var Origins = []string{
-	"https://naskah.bukupedia.co.id",
-	"https://auth.ulbi.ac.id",
-	"https://sip.ulbi.ac.id",
-	"https://euis.ulbi.ac.id",
-	"https://home.ulbi.ac.id",
-	"https://alpha.ulbi.ac.id",
-	"https://dias.ulbi.ac.id",
-	"https://iteung.ulbi.ac.id",
-	"https://whatsauth.github.io",
-	"https://pmb.ulbi.ac.id",
+	"https://cdn.blkkalittifaq.id",
+	"https://www.blkkalittifaq.id",
+	"https://kabar.blkkalittifaq.id",
 }
 
 var Headers = []string{
