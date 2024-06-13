@@ -57,19 +57,18 @@ func PutProduk(respw http.ResponseWriter, req *http.Request) {
 }
 
 func DeleteProduk(respw http.ResponseWriter, req *http.Request) {
-	id := helper.GetParam(req)
-	objectID, err := primitive.ObjectIDFromHex(id)
-	if err != nil {
-		helper.WriteJSON(respw, http.StatusBadRequest, "Invalid ID")
+	var newProduk model.Product
+	if err := json.NewDecoder(req.Body).Decode(&newProduk); err != nil {
+		helper.WriteJSON(respw, http.StatusBadRequest, err.Error())
 		return
 	}
-	filter := primitive.M{"_id": objectID}
-	err = atdb.DeleteOneDoc(config.Mongoconn, "product", filter)
+	filter := primitive.M{"nama": newProduk.Nama}
+	err  := atdb.DeleteOneDoc(config.Mongoconn, "product", filter)
 	if err != nil {
 		helper.WriteJSON(respw, http.StatusInternalServerError, err.Error())
 		return
 	}
-	helper.WriteJSON(respw, http.StatusOK, "Produk deleted")
+	helper.WriteJSON(respw, http.StatusOK, newProduk)
 }
 
 func GetGallery(respw http.ResponseWriter, req *http.Request) {
