@@ -28,6 +28,8 @@ func URL(w http.ResponseWriter, r *http.Request) {
 		controller.PostGallery(w, r)
 	case method == "DELETE" && path == "/data/produk":
 		controller.DeleteProduk(w, r)
+	case method == "POST" && path == "/data/adminregister":
+		controller.RegisterHandler(w, r)
 	}
 
 }

@@ -81,7 +81,7 @@ func GetGallery(respw http.ResponseWriter, req *http.Request) {
 	helper.WriteJSON(respw, http.StatusOK, gallery)
 }
 
-func PostGallery (respw http.ResponseWriter, req *http.Request) {
+func PostGallery(respw http.ResponseWriter, req *http.Request) {
 	var newGallery model.Gallery
 	if err := json.NewDecoder(req.Body).Decode(&newGallery); err != nil {
 		helper.WriteJSON(respw, http.StatusBadRequest, err.Error())
@@ -93,4 +93,32 @@ func PostGallery (respw http.ResponseWriter, req *http.Request) {
 		return
 	}
 	helper.WriteJSON(respw, http.StatusOK, newGallery)
+}
+
+func RegisterHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var registrationData model.AdminRegistration
+
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&registrationData)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	// Lakukan validasi dan pemrosesan data di sini
+	if registrationData.Password != registrationData.ConfirmPassword {
+		http.Error(w, "Passwords do not match", http.StatusBadRequest)
+		return
+	}
+
+	// Simpan data ke database atau lakukan tindakan lain yang diperlukan
+
+	response := map[string]string{"message": "Registration successful"}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
 }
