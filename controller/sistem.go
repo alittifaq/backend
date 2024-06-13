@@ -95,6 +95,43 @@ func PostGallery(respw http.ResponseWriter, req *http.Request) {
 	helper.WriteJSON(respw, http.StatusOK, newGallery)
 }
 
+func PutGallery(respw http.ResponseWriter, req *http.Request) {
+	id := helper.GetParam(req)
+	objectID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		helper.WriteJSON(respw, http.StatusBadRequest, "Invalid ID")
+		return
+	}
+	var updatedGallery model.Gallery
+	if err := json.NewDecoder(req.Body).Decode(&updatedGallery); err != nil {
+		helper.WriteJSON(respw, http.StatusBadRequest, err.Error())
+		return
+	}
+	filter := bson.M{"_id": objectID}
+	update := bson.M{"$set": updatedGallery}
+	if _, err := atdb.UpdateDoc(config.Mongoconn, "gallery", filter, update); err != nil {
+		helper.WriteJSON(respw, http.StatusInternalServerError, err.Error())
+		return
+	}
+	helper.WriteJSON(respw, http.StatusOK, updatedGallery)
+}
+
+func DeleteGallery(respw http.ResponseWriter, req *http.Request) {
+	id := helper.GetParam(req)
+	objectID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		helper.WriteJSON(respw, http.StatusBadRequest, "Invalid ID")
+		return
+	}
+	filter := primitive.M{"_id": objectID}
+	err = atdb.DeleteOneDoc(config.Mongoconn, "gallery", filter)
+	if err != nil {
+		helper.WriteJSON(respw, http.StatusInternalServerError, err.Error())
+		return
+	}
+	helper.WriteJSON(respw, http.StatusOK, "Gallery deleted")
+}
+
 func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
