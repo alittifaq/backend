@@ -14,3 +14,10 @@ type Gallery struct {
 	Judul_Kegiatan string             `bson:"judul_kegiatan,omitempty" json:"judul_kegiatan,omitempty"`
 	Tahun          int                `bson:"tahun,omitempty" json:"tahun,omitempty"`
 }
+
+type AdminRegistration struct {
+	Fullname        string `json:"fullname"`
+	Email           string `json:"email"`
+	Password        string `json:"password"`
+	ConfirmPassword string `json:"confirm_password"`
+}
