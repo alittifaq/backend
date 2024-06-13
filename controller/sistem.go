@@ -117,6 +117,11 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Simpan data ke database atau lakukan tindakan lain yang diperlukan
+	_, err = atdb.InsertOneDoc(config.Mongoconn, "admin", registrationData)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
 	response := map[string]string{"message": "Registration successful"}
 	w.Header().Set("Content-Type", "application/json")
