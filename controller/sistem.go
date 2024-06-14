@@ -104,7 +104,7 @@ func PutGallery(respw http.ResponseWriter, req *http.Request) {
 		helper.WriteJSON(respw, http.StatusBadRequest, err.Error())
 		return
 	}
-	filter := bson.M{"_id": objectID}
+	filter := bson.M{"judul_kegiatan": newGallery.Judul_Kegiatan}
 	update := bson.M{"$set": updatedGallery}
 	if _, err := atdb.UpdateDoc(config.Mongoconn, "gallery", filter, update); err != nil {
 		helper.WriteJSON(respw, http.StatusInternalServerError, err.Error())
