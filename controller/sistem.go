@@ -36,10 +36,9 @@ func PostProduk(respw http.ResponseWriter, req *http.Request) {
 }
 
 func PutProduk(respw http.ResponseWriter, req *http.Request) {
-	id := helper.GetParam(req)
-	objectID, err := primitive.ObjectIDFromHex(id)
-	if err != nil {
-		helper.WriteJSON(respw, http.StatusBadRequest, "Invalid ID")
+	var newProduk model.Product
+	if err := json.NewDecoder(req.Body).Decode(&newProduk); err != nil {
+		helper.WriteJSON(respw, http.StatusBadRequest, err.Error())
 		return
 	}
 	var updatedProduk model.Product
@@ -47,7 +46,7 @@ func PutProduk(respw http.ResponseWriter, req *http.Request) {
 		helper.WriteJSON(respw, http.StatusBadRequest, err.Error())
 		return
 	}
-	filter := bson.M{"_id": objectID}
+	filter := bson.M{"nama": newProduk.Nama}
 	update := bson.M{"$set": updatedProduk}
 	if _, err := atdb.UpdateDoc(config.Mongoconn, "product", filter, update); err != nil {
 		helper.WriteJSON(respw, http.StatusInternalServerError, err.Error())
@@ -95,10 +94,9 @@ func PostGallery(respw http.ResponseWriter, req *http.Request) {
 }
 
 func PutGallery(respw http.ResponseWriter, req *http.Request) {
-	id := helper.GetParam(req)
-	objectID, err := primitive.ObjectIDFromHex(id)
-	if err != nil {
-		helper.WriteJSON(respw, http.StatusBadRequest, "Invalid ID")
+	var newGallery model.Gallery
+	if err := json.NewDecoder(req.Body).Decode(&newGallery); err != nil {
+		helper.WriteJSON(respw, http.StatusBadRequest, err.Error())
 		return
 	}
 	var updatedGallery model.Gallery
