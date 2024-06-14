@@ -116,14 +116,13 @@ func PutGallery(respw http.ResponseWriter, req *http.Request) {
 }
 
 func DeleteGallery(respw http.ResponseWriter, req *http.Request) {
-	id := helper.GetParam(req)
-	objectID, err := primitive.ObjectIDFromHex(id)
-	if err != nil {
-		helper.WriteJSON(respw, http.StatusBadRequest, "Invalid ID")
+	var newGallery model.Gallery
+	if err := json.NewDecoder(req.Body).Decode(&newGallery); err != nil {
+		helper.WriteJSON(respw, http.StatusBadRequest, err.Error())
 		return
 	}
-	filter := primitive.M{"_id": objectID}
-	err = atdb.DeleteOneDoc(config.Mongoconn, "gallery", filter)
+	filter := primitive.M{"judul_kegiatan": newGallery.Judul_Kegiatan}
+	err := atdb.DeleteOneDoc(config.Mongoconn, "gallery", filter)
 	if err != nil {
 		helper.WriteJSON(respw, http.StatusInternalServerError, err.Error())
 		return
