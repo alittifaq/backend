@@ -41,18 +41,14 @@ func PutProduk(respw http.ResponseWriter, req *http.Request) {
 		helper.WriteJSON(respw, http.StatusBadRequest, err.Error())
 		return
 	}
-	var updatedProduk model.Product
-	if err := json.NewDecoder(req.Body).Decode(&updatedProduk); err != nil {
-		helper.WriteJSON(respw, http.StatusBadRequest, err.Error())
-		return
-	}
+	
 	filter := bson.M{"nama": newProduk.Nama}
-	update := bson.M{"$set": updatedProduk}
+	update := bson.M{"$set": newProduk}
 	if _, err := atdb.UpdateDoc(config.Mongoconn, "product", filter, update); err != nil {
 		helper.WriteJSON(respw, http.StatusInternalServerError, err.Error())
 		return
 	}
-	helper.WriteJSON(respw, http.StatusOK, updatedProduk)
+	helper.WriteJSON(respw, http.StatusOK, newProduk)
 }
 
 func DeleteProduk(respw http.ResponseWriter, req *http.Request) {
