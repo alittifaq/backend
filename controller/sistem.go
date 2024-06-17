@@ -57,7 +57,7 @@ func DeleteProduk(respw http.ResponseWriter, req *http.Request) {
 		helper.WriteJSON(respw, http.StatusBadRequest, err.Error())
 		return
 	}
-	filter := primitive.M{"nama": newProduk.Nama}
+	filter := bson.M{"nama": newProduk.Nama}
 	err  := atdb.DeleteOneDoc(config.Mongoconn, "product", filter)
 	if err != nil {
 		helper.WriteJSON(respw, http.StatusInternalServerError, err.Error())
@@ -95,18 +95,14 @@ func PutGallery(respw http.ResponseWriter, req *http.Request) {
 		helper.WriteJSON(respw, http.StatusBadRequest, err.Error())
 		return
 	}
-	var updatedGallery model.Gallery
-	if err := json.NewDecoder(req.Body).Decode(&updatedGallery); err != nil {
-		helper.WriteJSON(respw, http.StatusBadRequest, err.Error())
-		return
-	}
+	
 	filter := bson.M{"judul_kegiatan": newGallery.Judul_Kegiatan}
-	update := bson.M{"$set": updatedGallery}
+	update := bson.M{"$set": newGallery}
 	if _, err := atdb.UpdateDoc(config.Mongoconn, "gallery", filter, update); err != nil {
 		helper.WriteJSON(respw, http.StatusInternalServerError, err.Error())
 		return
 	}
-	helper.WriteJSON(respw, http.StatusOK, updatedGallery)
+	helper.WriteJSON(respw, http.StatusOK, newGallery)
 }
 
 func DeleteGallery(respw http.ResponseWriter, req *http.Request) {
@@ -115,7 +111,7 @@ func DeleteGallery(respw http.ResponseWriter, req *http.Request) {
 		helper.WriteJSON(respw, http.StatusBadRequest, err.Error())
 		return
 	}
-	filter := primitive.M{"judul_kegiatan": newGallery.Judul_Kegiatan}
+	filter := bson.M{"judul_kegiatan": newGallery.Judul_Kegiatan}
 	err := atdb.DeleteOneDoc(config.Mongoconn, "gallery", filter)
 	if err != nil {
 		helper.WriteJSON(respw, http.StatusInternalServerError, err.Error())
