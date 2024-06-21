@@ -23,7 +23,7 @@ type AdminRegistration struct {
 	ConfirmPassword string             `json:"confirm_password" bson:"confirm_password" validate:"required,eqfield=Password"`
 }
 
-type Login struct {
+type User struct {
 	ID       primitive.ObjectID `json:"id,omitempty" bson:"_id,omitempty"`
 	Email    string             `json:"email" bson:"email" validate:"required,email"`
 	Password string             `json:"password" bson:"password" validate:"required,min=8"`
