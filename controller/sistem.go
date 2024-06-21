@@ -42,12 +42,25 @@ func PutProduk(respw http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	filter := bson.M{"nama": newProduk.Nama}
+	// Konversi ID produk dari string ke ObjectID
+	objectID, err := primitive.ObjectIDFromHex(newProduk.ID.Hex())
+	if err != nil {
+		helper.WriteJSON(respw, http.StatusBadRequest, "Invalid product ID")
+		return
+	}
+
+	// Definisikan filter untuk menemukan produk berdasarkan ID
+	filter := bson.M{"_id": objectID}
+	// Definisikan update dengan set data baru
 	update := bson.M{"$set": newProduk}
+
+	// Update produk di MongoDB
 	if _, err := atdb.UpdateDoc(config.Mongoconn, "product", filter, update); err != nil {
 		helper.WriteJSON(respw, http.StatusInternalServerError, err.Error())
 		return
 	}
+
+	// Tulis respons sukses
 	helper.WriteJSON(respw, http.StatusOK, newProduk)
 }
 
