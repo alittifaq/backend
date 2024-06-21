@@ -41,7 +41,7 @@ func PutProduk(respw http.ResponseWriter, req *http.Request) {
 		helper.WriteJSON(respw, http.StatusBadRequest, err.Error())
 		return
 	}
-	
+
 	filter := bson.M{"nama": newProduk.Nama}
 	update := bson.M{"$set": newProduk}
 	if _, err := atdb.UpdateDoc(config.Mongoconn, "product", filter, update); err != nil {
@@ -58,7 +58,7 @@ func DeleteProduk(respw http.ResponseWriter, req *http.Request) {
 		return
 	}
 	filter := bson.M{"nama": newProduk.Nama}
-	err  := atdb.DeleteOneDoc(config.Mongoconn, "product", filter)
+	err := atdb.DeleteOneDoc(config.Mongoconn, "product", filter)
 	if err != nil {
 		helper.WriteJSON(respw, http.StatusInternalServerError, err.Error())
 		return
@@ -95,7 +95,7 @@ func PutGallery(respw http.ResponseWriter, req *http.Request) {
 		helper.WriteJSON(respw, http.StatusBadRequest, err.Error())
 		return
 	}
-	
+
 	filter := bson.M{"judul_kegiatan": newGallery.Judul_Kegiatan}
 	update := bson.M{"$set": newGallery}
 	if _, err := atdb.UpdateDoc(config.Mongoconn, "gallery", filter, update); err != nil {
@@ -142,7 +142,7 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Simpan data ke database atau lakukan tindakan lain yang diperlukan
-	_, err = atdb.InsertOneDoc(config.Mongoconn, "admin", registrationData)
+	_, err = atdb.InsertOneDoc(config.Mongoconn, "user", registrationData)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
