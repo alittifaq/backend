@@ -133,6 +133,36 @@ func DeleteGallery(respw http.ResponseWriter, req *http.Request) {
 	helper.WriteJSON(respw, http.StatusOK, "Gallery deleted")
 }
 
+func GetOneGallery(respw http.ResponseWriter, req *http.Request) {
+	// Ambil ID dari URL
+	id := req.URL.Query().Get("id")
+	if id == "" {
+		helper.WriteJSON(respw, http.StatusBadRequest, "ID parameter is required")
+		return
+	}
+
+	// Konversi ID dari string ke ObjectID
+	objectID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		helper.WriteJSON(respw, http.StatusBadRequest, "Invalid ID format")
+		return
+	}
+
+	// Buat filter untuk mencari dokumen berdasarkan ID
+	filter := bson.M{"_id": objectID}
+
+	// Cari dokumen di koleksi gallery
+	var gallery model.Gallery
+	gallery, err = atdb.GetOneDoc[model.Gallery](config.Mongoconn, "gallery", filter)
+	if err != nil {
+		helper.WriteJSON(respw, http.StatusNotFound, "Gallery not found")
+		return
+	}
+
+	// Kirim respons dengan dokumen yang ditemukan
+	helper.WriteJSON(respw, http.StatusOK, gallery)
+}
+
 func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
