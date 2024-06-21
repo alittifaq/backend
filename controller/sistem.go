@@ -10,6 +10,7 @@ import (
 	"github.com/gocroot/model"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 func GetProduk(respw http.ResponseWriter, req *http.Request) {
@@ -134,25 +135,37 @@ func DeleteGallery(respw http.ResponseWriter, req *http.Request) {
 }
 
 func GetOneGallery(respw http.ResponseWriter, req *http.Request) {
-	// Ambil judul kegiatan dari query parameter
-	judulKegiatan := req.URL.Query().Get("judul_kegiatan")
-	if judulKegiatan == "" {
-		helper.WriteJSON(respw, http.StatusBadRequest, "Judul Kegiatan parameter is required")
+	var requestBody struct {
+		JudulKegiatan string `json:"judul_kegiatan"`
+	}
+
+	// Decode request body
+	err := json.NewDecoder(req.Body).Decode(&requestBody)
+	if err != nil {
+		helper.WriteJSON(respw, http.StatusBadRequest, "Invalid request body")
 		return
 	}
 
-	// Buat filter untuk mencari dokumen berdasarkan judul kegiatan
-	filter := bson.M{"judul_kegiatan": judulKegiatan}
+	if requestBody.JudulKegiatan == "" {
+		helper.WriteJSON(respw, http.StatusBadRequest, "Missing gallery title")
+		return
+	}
 
-	// Cari dokumen di koleksi gallery
-	var gallery model.Gallery
+	// Membuat filter untuk mencari dokumen dengan judul kegiatan yang diberikan
+	filter := bson.M{"judul_kegiatan": requestBody.JudulKegiatan}
+
+	// Mengambil satu dokumen galeri
 	gallery, err := atdb.GetOneDoc[model.Gallery](config.Mongoconn, "gallery", filter)
 	if err != nil {
-		helper.WriteJSON(respw, http.StatusNotFound, "Gallery not found")
+		if err == mongo.ErrNoDocuments {
+			helper.WriteJSON(respw, http.StatusNotFound, "Gallery not found")
+		} else {
+			helper.WriteJSON(respw, http.StatusInternalServerError, err.Error())
+		}
 		return
 	}
 
-	// Kirim respons dengan dokumen yang ditemukan
+	// Mengembalikan dokumen galeri dalam format JSON
 	helper.WriteJSON(respw, http.StatusOK, gallery)
 }
 
