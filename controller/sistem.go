@@ -152,3 +152,21 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 }
+
+func GetUser(respw http.ResponseWriter, req *http.Request) {
+	var loginDetails model.User
+	if err := json.NewDecoder(req.Body).Decode(&loginDetails); err != nil {
+		helper.WriteJSON(respw, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	var user model.User
+	filter := bson.M{"email": loginDetails.Email, "password": loginDetails.Password}
+	user, err := atdb.GetOneDoc[model.User](config.Mongoconn, "user", filter)
+	if err != nil {
+		helper.WriteJSON(respw, http.StatusUnauthorized, "Invalid email or password")
+		return
+	}
+
+	helper.WriteJSON(respw, http.StatusOK, user)
+}
