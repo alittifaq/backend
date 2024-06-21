@@ -38,6 +38,8 @@ func URL(w http.ResponseWriter, r *http.Request) {
 		controller.RegisterHandler(w, r)
 	case method == "POST" && path == "/data/user":
 		controller.GetUser(w, r)
+	case method == "PUT" && path == "/data/gallery/detail":
+		controller.GetOneGallery(w, r)
 	}
 
 }
