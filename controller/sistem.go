@@ -136,7 +136,7 @@ func DeleteGallery(respw http.ResponseWriter, req *http.Request) {
 
 func GetOneGallery(respw http.ResponseWriter, req *http.Request) {
 	var requestBody struct {
-		JudulKegiatan string `json:"judul_kegiatan"`
+		Judul_Kegiatan string `json:"judul_kegiatan"`
 	}
 
 	// Decode request body
@@ -146,15 +146,15 @@ func GetOneGallery(respw http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	if requestBody.JudulKegiatan == "" {
+	if requestBody.Judul_Kegiatan == "" {
 		helper.WriteJSON(respw, http.StatusBadRequest, "Missing gallery title")
 		return
 	}
 
-	// Membuat filter untuk mencari dokumen dengan judul kegiatan yang diberikan
-	filter := bson.M{"judul_kegiatan": requestBody.JudulKegiatan}
+	// Create filter to search for the document with the given activity title
+	filter := bson.M{"judul_kegiatan": requestBody.Judul_Kegiatan}
 
-	// Mengambil satu dokumen galeri
+	// Retrieve one gallery document
 	gallery, err := atdb.GetOneDoc[model.Gallery](config.Mongoconn, "gallery", filter)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
@@ -165,7 +165,7 @@ func GetOneGallery(respw http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	// Mengembalikan dokumen galeri dalam format JSON
+	// Return the gallery document in JSON format
 	helper.WriteJSON(respw, http.StatusOK, gallery)
 }
 
