@@ -26,7 +26,7 @@ func URL(w http.ResponseWriter, r *http.Request) {
 		controller.PostProduk(w, r)
 	case method == "POST" && path == "/data/gallery":
 		controller.PostGallery(w, r)
-	case method == "PUT" && path == "/data/product":
+	case method == "GET" && path == "/data/product":
 		controller.PutProduk(w, r)
 	case method == "PUT" && path == "/data/gallery":
 		controller.PutGallery(w, r)
