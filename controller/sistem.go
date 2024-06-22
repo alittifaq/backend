@@ -44,17 +44,10 @@ func UpdateProduct(respw http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	// Konversi ID produk dari string ke ObjectID
-	objectID, err := primitive.ObjectIDFromHex(product.ID.Hex())
-	if err != nil {
-		helper.WriteJSON(respw, http.StatusBadRequest, "Invalid product ID")
-		return
-	}
+	// Definisikan filter untuk menemukan produk berdasarkan nama produk
+	filter := bson.M{"nama": product.Nama}
 
-	// Definisikan filter untuk menemukan produk berdasarkan ID
-	filter := bson.M{"_id": objectID}
-
-	// Get data produk berdasarkan ID
+	// Get data produk berdasarkan nama produk
 	existingProduct, err := atdb.GetOneDoc[model.Product](config.Mongoconn, "product", filter)
 	if err != nil {
 		helper.WriteJSON(respw, http.StatusInternalServerError, err.Error())
