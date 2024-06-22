@@ -36,15 +36,16 @@ func PostProduk(respw http.ResponseWriter, req *http.Request) {
 	helper.WriteJSON(respw, http.StatusOK, newProduk)
 }
 
-func PutProduk(respw http.ResponseWriter, req *http.Request) {
-	var newProduk model.Product
-	if err := json.NewDecoder(req.Body).Decode(&newProduk); err != nil {
+func UpdateProduct(respw http.ResponseWriter, req *http.Request) {
+	var product model.Product
+	err := json.NewDecoder(req.Body).Decode(&product)
+	if err != nil {
 		helper.WriteJSON(respw, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	// Konversi ID produk dari string ke ObjectID
-	objectID, err := primitive.ObjectIDFromHex(newProduk.ID.Hex())
+	objectID, err := primitive.ObjectIDFromHex(product.ID.Hex())
 	if err != nil {
 		helper.WriteJSON(respw, http.StatusBadRequest, "Invalid product ID")
 		return
@@ -52,17 +53,28 @@ func PutProduk(respw http.ResponseWriter, req *http.Request) {
 
 	// Definisikan filter untuk menemukan produk berdasarkan ID
 	filter := bson.M{"_id": objectID}
-	// Definisikan update dengan set data baru
-	update := bson.M{"$set": newProduk}
 
-	// Update produk di MongoDB
-	if _, err := atdb.UpdateDoc(config.Mongoconn, "product", filter, update); err != nil {
+	// Get data produk berdasarkan ID
+	existingProduct, err := atdb.GetOneDoc[model.Product](config.Mongoconn, "product", filter)
+	if err != nil {
+		helper.WriteJSON(respw, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	// Pastikan produk ditemukan sebelum melakukan update
+	if existingProduct.ID == primitive.NilObjectID {
+		helper.WriteJSON(respw, http.StatusNotFound, "Product not found")
+		return
+	}
+
+	// Update data produk yang ditemukan
+	if _, err := atdb.ReplaceOneDoc(config.Mongoconn, "product", filter, product); err != nil {
 		helper.WriteJSON(respw, http.StatusInternalServerError, err.Error())
 		return
 	}
 
 	// Tulis respons sukses
-	helper.WriteJSON(respw, http.StatusOK, newProduk)
+	helper.WriteJSON(respw, http.StatusOK, product)
 }
 
 func DeleteProduk(respw http.ResponseWriter, req *http.Request) {
