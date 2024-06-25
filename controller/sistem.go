@@ -10,6 +10,7 @@ import (
 	"github.com/gocroot/model"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 func GetProduk(respw http.ResponseWriter, req *http.Request) {
@@ -35,33 +36,38 @@ func PostProduk(respw http.ResponseWriter, req *http.Request) {
 	helper.WriteJSON(respw, http.StatusOK, newProduk)
 }
 
-func PutProduk(respw http.ResponseWriter, req *http.Request) {
-	var newProduk model.Product
-	if err := json.NewDecoder(req.Body).Decode(&newProduk); err != nil {
+func UpdateProduct(respw http.ResponseWriter, req *http.Request) {
+	var product model.Product
+	err := json.NewDecoder(req.Body).Decode(&product)
+	if err != nil {
 		helper.WriteJSON(respw, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	// Konversi ID produk dari string ke ObjectID
-	objectID, err := primitive.ObjectIDFromHex(newProduk.ID.Hex())
+	// Definisikan filter untuk menemukan produk berdasarkan nama produk
+	filter := bson.M{"nama": product.Nama}
+
+	// Get data produk berdasarkan nama produk
+	existingProduct, err := atdb.GetOneDoc[model.Product](config.Mongoconn, "product", filter)
 	if err != nil {
-		helper.WriteJSON(respw, http.StatusBadRequest, "Invalid product ID")
+		helper.WriteJSON(respw, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	// Definisikan filter untuk menemukan produk berdasarkan ID
-	filter := bson.M{"_id": objectID}
-	// Definisikan update dengan set data baru
-	update := bson.M{"$set": newProduk}
+	// Pastikan produk ditemukan sebelum melakukan update
+	if existingProduct.ID == primitive.NilObjectID {
+		helper.WriteJSON(respw, http.StatusNotFound, "Product not found")
+		return
+	}
 
-	// Update produk di MongoDB
-	if _, err := atdb.UpdateDoc(config.Mongoconn, "product", filter, update); err != nil {
+	// Update data produk yang ditemukan
+	if _, err := atdb.ReplaceOneDoc(config.Mongoconn, "product", filter, product); err != nil {
 		helper.WriteJSON(respw, http.StatusInternalServerError, err.Error())
 		return
 	}
 
 	// Tulis respons sukses
-	helper.WriteJSON(respw, http.StatusOK, newProduk)
+	helper.WriteJSON(respw, http.StatusOK, product)
 }
 
 func GetOneProduk(respw http.ResponseWriter, req *http.Request) {
@@ -155,25 +161,37 @@ func DeleteGallery(respw http.ResponseWriter, req *http.Request) {
 }
 
 func GetOneGallery(respw http.ResponseWriter, req *http.Request) {
-	// Ambil judul kegiatan dari query parameter
-	judulKegiatan := req.URL.Query().Get("judul_kegiatan")
-	if judulKegiatan == "" {
-		helper.WriteJSON(respw, http.StatusBadRequest, "Judul Kegiatan parameter is required")
+	var requestBody struct {
+		Judul_Kegiatan string `json:"judul_kegiatan"`
+	}
+
+	// Decode request body
+	err := json.NewDecoder(req.Body).Decode(&requestBody)
+	if err != nil {
+		helper.WriteJSON(respw, http.StatusBadRequest, "Invalid request body")
 		return
 	}
 
-	// Buat filter untuk mencari dokumen berdasarkan judul kegiatan
-	filter := bson.M{"judul_kegiatan": judulKegiatan}
+	if requestBody.Judul_Kegiatan == "" {
+		helper.WriteJSON(respw, http.StatusBadRequest, "Missing gallery title")
+		return
+	}
 
-	// Cari dokumen di koleksi gallery
-	var gallery model.Gallery
+	// Create filter to search for the document with the given activity title
+	filter := bson.M{"judul_kegiatan": requestBody.Judul_Kegiatan}
+
+	// Retrieve one gallery document
 	gallery, err := atdb.GetOneDoc[model.Gallery](config.Mongoconn, "gallery", filter)
 	if err != nil {
-		helper.WriteJSON(respw, http.StatusNotFound, "Gallery not found")
+		if err == mongo.ErrNoDocuments {
+			helper.WriteJSON(respw, http.StatusNotFound, "Gallery not found")
+		} else {
+			helper.WriteJSON(respw, http.StatusInternalServerError, err.Error())
+		}
 		return
 	}
 
-	// Kirim respons dengan dokumen yang ditemukan
+	// Return the gallery document in JSON format
 	helper.WriteJSON(respw, http.StatusOK, gallery)
 }
 
