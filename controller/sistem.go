@@ -13,6 +13,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
+// GetProduk mengambil semua produk dari database dan mengembalikannya sebagai JSON.
 func GetProduk(respw http.ResponseWriter, req *http.Request) {
 	produk, err := atdb.GetAllDoc[[]model.Product](config.Mongoconn, "product", bson.M{})
 	if err != nil {
@@ -22,6 +23,7 @@ func GetProduk(respw http.ResponseWriter, req *http.Request) {
 	helper.WriteJSON(respw, http.StatusOK, produk)
 }
 
+// PostProduk menambahkan produk baru ke dalam database.
 func PostProduk(respw http.ResponseWriter, req *http.Request) {
 	var newProduk model.Product
 	if err := json.NewDecoder(req.Body).Decode(&newProduk); err != nil {
@@ -36,6 +38,8 @@ func PostProduk(respw http.ResponseWriter, req *http.Request) {
 	helper.WriteJSON(respw, http.StatusOK, newProduk)
 }
 
+
+// UpdateProduct memperbarui produk yang ada di dalam database.
 func UpdateProduct(respw http.ResponseWriter, req *http.Request) {
 	var product model.Product
 	err := json.NewDecoder(req.Body).Decode(&product)
@@ -62,7 +66,7 @@ func UpdateProduct(respw http.ResponseWriter, req *http.Request) {
 
 	// Pastikan produk ditemukan sebelum melakukan update
 	if existingProduct.ID == primitive.NilObjectID {
-		helper.WriteJSON(respw, http.StatusNotFound, "Product not found")
+		helper.WriteJSON(respw, http.StatusNotFound, "Produk tidak ditemukan")
 		return
 	}
 
@@ -73,30 +77,11 @@ func UpdateProduct(respw http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	// Tulis respons sukses
+	// Kirim respons sukses
 	helper.WriteJSON(respw, http.StatusOK, product)
 }
 
-func GetOneProduk(respw http.ResponseWriter, req *http.Request) {
-	name := req.URL.Query().Get("nama")
-	if name == "" {
-		helper.WriteJSON(respw, http.StatusBadRequest, "Name parameter is required")
-		return
-	}
-
-	filter := bson.M{"nama": name}
-
-	var product model.Product
-	product, err := atdb.GetOneDoc[model.Product](config.Mongoconn, "product", filter)
-	if err != nil {
-		helper.WriteJSON(respw, http.StatusNotFound, "Product not found")
-		return
-	}
-
-	helper.WriteJSON(respw, http.StatusOK, product)
-}
-
-
+// DeleteProduk menghapus produk dari database berdasarkan namanya.
 func DeleteProduk(respw http.ResponseWriter, req *http.Request) {
 	var newProduk model.Product
 	if err := json.NewDecoder(req.Body).Decode(&newProduk); err != nil {
@@ -109,9 +94,10 @@ func DeleteProduk(respw http.ResponseWriter, req *http.Request) {
 		helper.WriteJSON(respw, http.StatusInternalServerError, err.Error())
 		return
 	}
-	helper.WriteJSON(respw, http.StatusOK, newProduk)
+	helper.WriteJSON(respw, http.StatusOK, "Produk berhasil dihapus")
 }
 
+// GetGallery mengambil semua item galeri dari database dan mengembalikannya sebagai JSON.
 func GetGallery(respw http.ResponseWriter, req *http.Request) {
 	gallery, err := atdb.GetAllDoc[[]model.Gallery](config.Mongoconn, "gallery", bson.M{})
 	if err != nil {
@@ -121,6 +107,7 @@ func GetGallery(respw http.ResponseWriter, req *http.Request) {
 	helper.WriteJSON(respw, http.StatusOK, gallery)
 }
 
+// PostGallery menambahkan item galeri baru ke dalam database.
 func PostGallery(respw http.ResponseWriter, req *http.Request) {
 	var newGallery model.Gallery
 	if err := json.NewDecoder(req.Body).Decode(&newGallery); err != nil {
@@ -135,6 +122,8 @@ func PostGallery(respw http.ResponseWriter, req *http.Request) {
 	helper.WriteJSON(respw, http.StatusOK, newGallery)
 }
 
+
+// UpdateGallery memperbarui item galeri yang ada di dalam database.
 func UpdateGallery(respw http.ResponseWriter, req *http.Request) {
 	var gallery model.Gallery
 	err := json.NewDecoder(req.Body).Decode(&gallery)
@@ -167,6 +156,7 @@ func UpdateGallery(respw http.ResponseWriter, req *http.Request) {
 
 
 
+// DeleteGallery menghapus item galeri dari database berdasarkan judul kegiatan.
 func DeleteGallery(respw http.ResponseWriter, req *http.Request) {
 	var newGallery model.Gallery
 	if err := json.NewDecoder(req.Body).Decode(&newGallery); err != nil {
@@ -179,7 +169,7 @@ func DeleteGallery(respw http.ResponseWriter, req *http.Request) {
 		helper.WriteJSON(respw, http.StatusInternalServerError, err.Error())
 		return
 	}
-	helper.WriteJSON(respw, http.StatusOK, "Gallery deleted")
+	helper.WriteJSON(respw, http.StatusOK, "Item galeri berhasil dihapus")
 }
 
 func GetOneGallery(respw http.ResponseWriter, req *http.Request) {
@@ -217,9 +207,10 @@ func GetOneGallery(respw http.ResponseWriter, req *http.Request) {
 	helper.WriteJSON(respw, http.StatusOK, gallery)
 }
 
+// RegisterHandler menghandle permintaan registrasi admin.
 func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		http.Error(w, "Metode tidak diizinkan", http.StatusMethodNotAllowed)
 		return
 	}
 
@@ -234,7 +225,7 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Lakukan validasi dan pemrosesan data di sini
 	if registrationData.Password != registrationData.ConfirmPassword {
-		http.Error(w, "Passwords do not match", http.StatusBadRequest)
+		http.Error(w, "Password tidak sesuai", http.StatusBadRequest)
 		return
 	}
 
@@ -245,11 +236,12 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response := map[string]string{"message": "Registration successful"}
+	response := map[string]string{"message": "Registrasi berhasil"}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 }
 
+// GetUser mengambil informasi user dari database berdasarkan email dan password.
 func GetUser(respw http.ResponseWriter, req *http.Request) {
 	var loginDetails model.User
 	if err := json.NewDecoder(req.Body).Decode(&loginDetails); err != nil {
@@ -261,7 +253,7 @@ func GetUser(respw http.ResponseWriter, req *http.Request) {
 	filter := bson.M{"email": loginDetails.Email, "password": loginDetails.Password}
 	user, err := atdb.GetOneDoc[model.User](config.Mongoconn, "user", filter)
 	if err != nil {
-		helper.WriteJSON(respw, http.StatusUnauthorized, "Invalid email or password")
+		helper.WriteJSON(respw, http.StatusUnauthorized, "Email atau password salah")
 		return
 	}
 

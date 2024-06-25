@@ -8,9 +8,10 @@ import (
 	"github.com/gocroot/helper"
 )
 
+// URL mengarahkan permintaan HTTP masuk ke fungsi controller yang tepat.
 func URL(w http.ResponseWriter, r *http.Request) {
 	if config.SetAccessControlHeaders(w, r) {
-		return // If it's a preflight request, return early.
+		return // Jika ini adalah permintaan preflight, kembalikan segera.
 	}
 	config.SetEnv()
 
