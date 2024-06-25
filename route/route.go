@@ -40,6 +40,8 @@ func URL(w http.ResponseWriter, r *http.Request) {
 		controller.GetUser(w, r)
 	case method == "PUT" && path == "/data/gallery/detail":
 		controller.GetOneGallery(w, r)
+	case method == "PUT" && path == "/data/product/detail":
+		controller.GetOneProduk(w, r)
 	}
 
 }

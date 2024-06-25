@@ -64,6 +64,26 @@ func PutProduk(respw http.ResponseWriter, req *http.Request) {
 	helper.WriteJSON(respw, http.StatusOK, newProduk)
 }
 
+func GetOneProduk(respw http.ResponseWriter, req *http.Request) {
+	name := req.URL.Query().Get("nama")
+	if name == "" {
+		helper.WriteJSON(respw, http.StatusBadRequest, "Name parameter is required")
+		return
+	}
+
+	filter := bson.M{"nama": name}
+
+	var product model.Product
+	product, err := atdb.GetOneDoc[model.Product](config.Mongoconn, "product", filter)
+	if err != nil {
+		helper.WriteJSON(respw, http.StatusNotFound, "Product not found")
+		return
+	}
+
+	helper.WriteJSON(respw, http.StatusOK, product)
+}
+
+
 func DeleteProduk(respw http.ResponseWriter, req *http.Request) {
 	var newProduk model.Product
 	if err := json.NewDecoder(req.Body).Decode(&newProduk); err != nil {
@@ -117,6 +137,7 @@ func PutGallery(respw http.ResponseWriter, req *http.Request) {
 	}
 	helper.WriteJSON(respw, http.StatusOK, newGallery)
 }
+
 
 func DeleteGallery(respw http.ResponseWriter, req *http.Request) {
 	var newGallery model.Gallery
