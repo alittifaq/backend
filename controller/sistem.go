@@ -44,6 +44,12 @@ func UpdateProduct(respw http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	// Validasi bahwa nama produk tidak boleh kosong
+	if product.Nama == "" {
+		helper.WriteJSON(respw, http.StatusBadRequest, "Nama produk tidak boleh kosong")
+		return
+	}
+
 	// Definisikan filter untuk menemukan produk berdasarkan nama produk
 	filter := bson.M{"nama": product.Nama}
 
@@ -61,6 +67,7 @@ func UpdateProduct(respw http.ResponseWriter, req *http.Request) {
 	}
 
 	// Update data produk yang ditemukan
+	product.ID = existingProduct.ID // Pertahankan ID yang sudah ada
 	if _, err := atdb.ReplaceOneDoc(config.Mongoconn, "product", filter, product); err != nil {
 		helper.WriteJSON(respw, http.StatusInternalServerError, err.Error())
 		return
@@ -128,21 +135,36 @@ func PostGallery(respw http.ResponseWriter, req *http.Request) {
 	helper.WriteJSON(respw, http.StatusOK, newGallery)
 }
 
-func PutGallery(respw http.ResponseWriter, req *http.Request) {
-	var newGallery model.Gallery
-	if err := json.NewDecoder(req.Body).Decode(&newGallery); err != nil {
+func UpdateGallery(respw http.ResponseWriter, req *http.Request) {
+	var gallery model.Gallery
+	err := json.NewDecoder(req.Body).Decode(&gallery)
+	if err != nil {
 		helper.WriteJSON(respw, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	filter := bson.M{"judul_kegiatan": newGallery.Judul_Kegiatan}
-	update := bson.M{"$set": newGallery}
+	// Validasi bahwa judul kegiatan tidak boleh kosong
+	if gallery.Judul_Kegiatan == "" {
+		helper.WriteJSON(respw, http.StatusBadRequest, "Judul kegiatan tidak boleh kosong")
+		return
+	}
+
+	// Filter untuk mencari item galeri berdasarkan judul kegiatan
+	filter := bson.M{"judul_kegiatan": gallery.Judul_Kegiatan}
+
+	// Persiapkan operasi pembaruan dengan menggunakan operator $set
+	update := bson.M{"$set": gallery}
+
+	// Lakukan operasi pembaruan pada item galeri
 	if _, err := atdb.UpdateDoc(config.Mongoconn, "gallery", filter, update); err != nil {
 		helper.WriteJSON(respw, http.StatusInternalServerError, err.Error())
 		return
 	}
-	helper.WriteJSON(respw, http.StatusOK, newGallery)
+
+	// Kirim respons sukses
+	helper.WriteJSON(respw, http.StatusOK, gallery)
 }
+
 
 
 func DeleteGallery(respw http.ResponseWriter, req *http.Request) {

@@ -29,7 +29,7 @@ func URL(w http.ResponseWriter, r *http.Request) {
 	case method == "PUT" && path == "/data/product":
 		controller.UpdateProduct(w, r)
 	case method == "PUT" && path == "/data/gallery":
-		controller.PutGallery(w, r)
+		controller.UpdateGallery(w, r)
 	case method == "DELETE" && path == "/data/product":
 		controller.DeleteProduk(w, r)
 	case method == "DELETE" && path == "/data/gallery":
@@ -40,8 +40,8 @@ func URL(w http.ResponseWriter, r *http.Request) {
 		controller.GetUser(w, r)
 	// case method == "PUT" && path == "/data/gallery/detail":
 	// 	controller.GetOneGallery(w, r)
-	case method == "PUT" && path == "/data/product/detail":
-		controller.GetOneProduk(w, r)
+	// case method == "PUT" && path == "/data/product/detail":
+	// 	controller.GetOneProduk(w, r)
 	}
 
 }
