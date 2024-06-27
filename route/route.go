@@ -21,6 +21,8 @@ func URL(w http.ResponseWriter, r *http.Request) {
 		controller.GetGallery(w, r)
 	case method == "GET" && path == "/data/product":
 		controller.GetProduk(w, r)
+	case method == "GET" && path == "/data/gallery/detail":
+		controller.GetOneGallery(w, r)
 	case method == "POST" && helper.URLParam(path, "/upload/:path"):
 		controller.PostUploadGithub(w, r)
 	case method == "POST" && path == "/data/product":
@@ -39,10 +41,5 @@ func URL(w http.ResponseWriter, r *http.Request) {
 		controller.RegisterHandler(w, r)
 	case method == "POST" && path == "/data/user":
 		controller.GetUser(w, r)
-	// case method == "PUT" && path == "/data/gallery/detail":
-	// 	controller.GetOneGallery(w, r)
-	// case method == "PUT" && path == "/data/product/detail":
-	// 	controller.GetOneProduk(w, r)
 	}
-
 }
