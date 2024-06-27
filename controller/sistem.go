@@ -177,19 +177,25 @@ func UpdateGallery(respw http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	// Validasi bahwa judul kegiatan tidak boleh kosong
-	if gallery.Judul_Kegiatan == "" {
-		helper.WriteJSON(respw, http.StatusBadRequest, "Judul kegiatan tidak boleh kosong")
+	// Validasi bahwa ID gallery tidak boleh kosong
+	if gallery.ID == primitive.NilObjectID {
+		helper.WriteJSON(respw, http.StatusBadRequest, "ID gallery tidak boleh kosong")
 		return
 	}
 
-	// Filter untuk mencari item galeri berdasarkan judul kegiatan
-	filter := bson.M{"judul_kegiatan": gallery.Judul_Kegiatan}
+	// Definisikan filter untuk menemukan gallery berdasarkan ID gallery
+	filter := bson.M{"_id": gallery.ID}
 
-	// Persiapkan operasi pembaruan dengan menggunakan operator $set
-	update := bson.M{"$set": gallery}
+	// Definisikan update dengan set data baru
+	update := bson.M{
+		"$set": bson.M{
+			"foto":           gallery.Foto,
+			"judul_kegiatan": gallery.Judul_Kegiatan,
+			"tahun":          gallery.Tahun,
+		},
+	}
 
-	// Lakukan operasi pembaruan pada item galeri
+	// Update gallery di MongoDB
 	if _, err := atdb.UpdateDoc(config.Mongoconn, "gallery", filter, update); err != nil {
 		helper.WriteJSON(respw, http.StatusInternalServerError, err.Error())
 		return
