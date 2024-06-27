@@ -2,6 +2,7 @@ package controller
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 
 	"github.com/gocroot/config"
@@ -37,7 +38,6 @@ func PostProduk(respw http.ResponseWriter, req *http.Request) {
 	}
 	helper.WriteJSON(respw, http.StatusOK, newProduk)
 }
-
 
 // UpdateProduct memperbarui produk yang ada di dalam database.
 func UpdateProduct(respw http.ResponseWriter, req *http.Request) {
@@ -122,7 +122,6 @@ func PostGallery(respw http.ResponseWriter, req *http.Request) {
 	helper.WriteJSON(respw, http.StatusOK, newGallery)
 }
 
-
 // UpdateGallery memperbarui item galeri yang ada di dalam database.
 func UpdateGallery(respw http.ResponseWriter, req *http.Request) {
 	var gallery model.Gallery
@@ -154,8 +153,6 @@ func UpdateGallery(respw http.ResponseWriter, req *http.Request) {
 	helper.WriteJSON(respw, http.StatusOK, gallery)
 }
 
-
-
 // DeleteGallery menghapus item galeri dari database berdasarkan judul kegiatan.
 func DeleteGallery(respw http.ResponseWriter, req *http.Request) {
 	var newGallery model.Gallery
@@ -173,26 +170,18 @@ func DeleteGallery(respw http.ResponseWriter, req *http.Request) {
 }
 
 func GetOneGallery(respw http.ResponseWriter, req *http.Request) {
-	var requestBody struct {
-		Judul_Kegiatan string `json:"judul_kegiatan"`
-	}
+	// Ambil parameter dari query string
+	judulKegiatan := req.URL.Query().Get("judul_kegiatan")
 
-	// Decode request body
-	err := json.NewDecoder(req.Body).Decode(&requestBody)
-	if err != nil {
-		helper.WriteJSON(respw, http.StatusBadRequest, "Invalid request body")
-		return
-	}
-
-	if requestBody.Judul_Kegiatan == "" {
+	if judulKegiatan == "" {
 		helper.WriteJSON(respw, http.StatusBadRequest, "Missing gallery title")
 		return
 	}
 
-	// Create filter to search for the document with the given activity title
-	filter := bson.M{"judul_kegiatan": requestBody.Judul_Kegiatan}
+	// Buat filter untuk mencari dokumen dengan judul kegiatan yang diberikan
+	filter := bson.M{"judul_kegiatan": judulKegiatan}
 
-	// Retrieve one gallery document
+	// Ambil satu dokumen galeri
 	gallery, err := atdb.GetOneDoc[model.Gallery](config.Mongoconn, "gallery", filter)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
@@ -203,7 +192,10 @@ func GetOneGallery(respw http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	// Return the gallery document in JSON format
+	// Debugging: Log the found gallery
+	log.Printf("Found gallery: %+v\n", gallery)
+
+	// Kembalikan dokumen galeri dalam format JSON
 	helper.WriteJSON(respw, http.StatusOK, gallery)
 }
 
