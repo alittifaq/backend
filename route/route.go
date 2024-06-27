@@ -23,6 +23,8 @@ func URL(w http.ResponseWriter, r *http.Request) {
 		controller.GetProduk(w, r)
 	case method == "GET" && path == "/data/gallery/detail":
 		controller.GetOneGallery(w, r)
+	case method == "GET" && path == "/data/product/detail":
+		controller.GetOneProduk(w, r)
 	case method == "POST" && helper.URLParam(path, "/upload/:path"):
 		controller.PostUploadGithub(w, r)
 	case method == "POST" && path == "/data/product":

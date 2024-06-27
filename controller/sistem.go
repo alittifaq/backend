@@ -2,7 +2,6 @@ package controller
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 
 	"github.com/gocroot/config"
@@ -22,6 +21,33 @@ func GetProduk(respw http.ResponseWriter, req *http.Request) {
 		return
 	}
 	helper.WriteJSON(respw, http.StatusOK, produk)
+}
+
+func GetOneProduk(respw http.ResponseWriter, req *http.Request) {
+	// Ambil parameter dari query string
+	nama := req.URL.Query().Get("nama")
+
+	if nama == "" {
+		helper.WriteJSON(respw, http.StatusBadRequest, "Missing product title")
+		return
+	}
+
+	// Buat filter untuk mencari dokumen dengan judul kegiatan yang diberikan
+	filter := bson.M{"nama": nama}
+
+	// Ambil satu dokumen galeri
+	product, err := atdb.GetOneDoc[model.Product](config.Mongoconn, "product", filter)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			helper.WriteJSON(respw, http.StatusNotFound, "Product not found")
+		} else {
+			helper.WriteJSON(respw, http.StatusInternalServerError, err.Error())
+		}
+		return
+	}
+
+	// Kembalikan dokumen galeri dalam format JSON
+	helper.WriteJSON(respw, http.StatusOK, product)
 }
 
 // PostProduk menambahkan produk baru ke dalam database.
@@ -107,6 +133,33 @@ func GetGallery(respw http.ResponseWriter, req *http.Request) {
 	helper.WriteJSON(respw, http.StatusOK, gallery)
 }
 
+func GetOneGallery(respw http.ResponseWriter, req *http.Request) {
+	// Ambil parameter dari query string
+	judulKegiatan := req.URL.Query().Get("judul_kegiatan")
+
+	if judulKegiatan == "" {
+		helper.WriteJSON(respw, http.StatusBadRequest, "Missing gallery title")
+		return
+	}
+
+	// Buat filter untuk mencari dokumen dengan judul kegiatan yang diberikan
+	filter := bson.M{"judul_kegiatan": judulKegiatan}
+
+	// Ambil satu dokumen galeri
+	gallery, err := atdb.GetOneDoc[model.Gallery](config.Mongoconn, "gallery", filter)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			helper.WriteJSON(respw, http.StatusNotFound, "Gallery not found")
+		} else {
+			helper.WriteJSON(respw, http.StatusInternalServerError, err.Error())
+		}
+		return
+	}
+
+	// Kembalikan dokumen galeri dalam format JSON
+	helper.WriteJSON(respw, http.StatusOK, gallery)
+}
+
 // PostGallery menambahkan item galeri baru ke dalam database.
 func PostGallery(respw http.ResponseWriter, req *http.Request) {
 	var newGallery model.Gallery
@@ -167,36 +220,6 @@ func DeleteGallery(respw http.ResponseWriter, req *http.Request) {
 		return
 	}
 	helper.WriteJSON(respw, http.StatusOK, "Item galeri berhasil dihapus")
-}
-
-func GetOneGallery(respw http.ResponseWriter, req *http.Request) {
-	// Ambil parameter dari query string
-	judulKegiatan := req.URL.Query().Get("judul_kegiatan")
-
-	if judulKegiatan == "" {
-		helper.WriteJSON(respw, http.StatusBadRequest, "Missing gallery title")
-		return
-	}
-
-	// Buat filter untuk mencari dokumen dengan judul kegiatan yang diberikan
-	filter := bson.M{"judul_kegiatan": judulKegiatan}
-
-	// Ambil satu dokumen galeri
-	gallery, err := atdb.GetOneDoc[model.Gallery](config.Mongoconn, "gallery", filter)
-	if err != nil {
-		if err == mongo.ErrNoDocuments {
-			helper.WriteJSON(respw, http.StatusNotFound, "Gallery not found")
-		} else {
-			helper.WriteJSON(respw, http.StatusInternalServerError, err.Error())
-		}
-		return
-	}
-
-	// Debugging: Log the found gallery
-	log.Printf("Found gallery: %+v\n", gallery)
-
-	// Kembalikan dokumen galeri dalam format JSON
-	helper.WriteJSON(respw, http.StatusOK, gallery)
 }
 
 // RegisterHandler menghandle permintaan registrasi admin.
