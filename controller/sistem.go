@@ -65,7 +65,6 @@ func PostProduk(respw http.ResponseWriter, req *http.Request) {
 	helper.WriteJSON(respw, http.StatusOK, newProduk)
 }
 
-// UpdateProduct memperbarui produk yang ada di dalam database.
 func UpdateProduct(respw http.ResponseWriter, req *http.Request) {
 	var product model.Product
 	err := json.NewDecoder(req.Body).Decode(&product)
@@ -74,31 +73,25 @@ func UpdateProduct(respw http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	// Validasi bahwa nama produk tidak boleh kosong
-	if product.Nama == "" {
-		helper.WriteJSON(respw, http.StatusBadRequest, "Nama produk tidak boleh kosong")
+	// Validasi bahwa ID produk tidak boleh kosong
+	if product.ID == primitive.NilObjectID {
+		helper.WriteJSON(respw, http.StatusBadRequest, "ID produk tidak boleh kosong")
 		return
 	}
 
-	// Definisikan filter untuk menemukan produk berdasarkan nama produk
-	filter := bson.M{"nama": product.Nama}
+	// Definisikan filter untuk menemukan produk berdasarkan ID produk
+	filter := bson.M{"_id": product.ID}
 
-	// Get data produk berdasarkan nama produk
-	existingProduct, err := atdb.GetOneDoc[model.Product](config.Mongoconn, "product", filter)
-	if err != nil {
-		helper.WriteJSON(respw, http.StatusInternalServerError, err.Error())
-		return
+	// Definisikan update dengan set data baru
+	update := bson.M{
+		"$set": bson.M{
+			"foto": product.Foto,
+			"nama": product.Nama,
+		},
 	}
 
-	// Pastikan produk ditemukan sebelum melakukan update
-	if existingProduct.ID == primitive.NilObjectID {
-		helper.WriteJSON(respw, http.StatusNotFound, "Produk tidak ditemukan")
-		return
-	}
-
-	// Update data produk yang ditemukan
-	product.ID = existingProduct.ID // Pertahankan ID yang sudah ada
-	if _, err := atdb.ReplaceOneDoc(config.Mongoconn, "product", filter, product); err != nil {
+	// Update produk di MongoDB
+	if _, err := atdb.UpdateDoc(config.Mongoconn, "product", filter, update); err != nil {
 		helper.WriteJSON(respw, http.StatusInternalServerError, err.Error())
 		return
 	}
