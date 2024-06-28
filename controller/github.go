@@ -1,6 +1,8 @@
 package controller
 
 import (
+	"encoding/json"
+	"mime/multipart"
 	"net/http"
 
 	"github.com/gocroot/config"
@@ -12,6 +14,28 @@ import (
 	"github.com/gocroot/helper/ghupload"
 	"github.com/whatsauth/itmodel"
 )
+
+func GetGithubFiles(w http.ResponseWriter, r *http.Request) {
+	var respn itmodel.Response
+	gh, err := atdb.GetOneDoc[model.Ghcreates](config.Mongoconn, "github", bson.M{})
+	if err != nil {
+		respn.Info = helper.GetSecretFromHeader(r)
+		respn.Response = err.Error()
+		helper.WriteJSON(w, http.StatusConflict, respn)
+		return
+	}
+
+	content, err := ghupload.GithubListFiles(gh.GitHubAccessToken, "alittifaq", "cdn")
+	if err != nil {
+		respn.Response = err.Error()
+		helper.WriteJSON(w, http.StatusInternalServerError, respn)
+		return
+	}
+
+	respn.Response = "File list retrieved successfully"
+	respn.Data = content
+	helper.WriteJSON(w, http.StatusOK, respn)
+}
 
 func PostUploadGithub(w http.ResponseWriter, r *http.Request) {
 	var respn itmodel.Response
@@ -60,4 +84,94 @@ func PostUploadGithub(w http.ResponseWriter, r *http.Request) {
 	respn.Response = *content.Content.Path
 	helper.WriteJSON(w, http.StatusOK, respn)
 
+}
+
+func UpdateGithubFile(w http.ResponseWriter, r *http.Request) {
+	var respn itmodel.Response
+
+	// Parse multipart form
+	if err := r.ParseMultipartForm(10 << 20); err != nil {
+		respn.Response = err.Error()
+		helper.WriteJSON(w, http.StatusBadRequest, respn)
+		return
+	}
+
+	// Get the uploaded file
+	file, handler, err := r.FormFile("file")
+	if err != nil {
+		respn.Response = err.Error()
+		helper.WriteJSON(w, http.StatusBadRequest, respn)
+		return
+	}
+	defer file.Close()
+
+	// Get the file name from form
+	fileName := r.FormValue("fileName")
+	if fileName == "" {
+		respn.Response = "File name is required"
+		helper.WriteJSON(w, http.StatusBadRequest, respn)
+		return
+	}
+
+	// Get GitHub credentials from the database
+	gh, err := atdb.GetOneDoc[model.Ghcreates](config.Mongoconn, "github", bson.M{})
+	if err != nil {
+		respn.Info = helper.GetSecretFromHeader(r)
+		respn.Response = err.Error()
+		helper.WriteJSON(w, http.StatusConflict, respn)
+		return
+	}
+
+	// Create a multipart.FileHeader from the uploaded file
+	fileHeader := &multipart.FileHeader{
+		Filename: handler.Filename,
+		Header:   handler.Header,
+		Size:     handler.Size,
+	}
+
+	// Update the file in GitHub
+	content, _, err := ghupload.GithubUpdateFile(gh.GitHubAccessToken, gh.GitHubAuthorName, gh.GitHubAuthorEmail, fileHeader, "alittifaq", "cdn", fileName)
+	if err != nil {
+		respn.Info = "Failed to update GitHub file"
+		respn.Response = err.Error()
+		helper.WriteJSON(w, http.StatusInternalServerError, respn)
+		return
+	}
+
+	respn.Info = "File updated successfully"
+	respn.Response = *content.Content.Path
+	helper.WriteJSON(w, http.StatusOK, respn)
+}
+
+func DeleteGithubFile(w http.ResponseWriter, r *http.Request) {
+	var respn itmodel.Response
+	var deleteRequest struct {
+		FileName string `json:"fileName"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&deleteRequest); err != nil {
+		respn.Response = err.Error()
+		helper.WriteJSON(w, http.StatusBadRequest, respn)
+		return
+	}
+
+	gh, err := atdb.GetOneDoc[model.Ghcreates](config.Mongoconn, "github", bson.M{})
+	if err != nil {
+		respn.Info = helper.GetSecretFromHeader(r)
+		respn.Response = err.Error()
+		helper.WriteJSON(w, http.StatusConflict, respn)
+		return
+	}
+
+	_, _, err = ghupload.GithubDeleteFile(gh.GitHubAccessToken, gh.GitHubAuthorName, gh.GitHubAuthorEmail, "alittifaq", "cdn", deleteRequest.FileName)
+	if err != nil {
+		respn.Info = "Failed to delete GitHub file"
+		respn.Response = err.Error()
+		helper.WriteJSON(w, http.StatusInternalServerError, respn)
+		return
+	}
+
+	respn.Info = "File deleted successfully"
+	respn.Response = deleteRequest.FileName
+	helper.WriteJSON(w, http.StatusOK, respn)
 }
