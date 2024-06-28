@@ -17,6 +17,8 @@ import (
 
 func GetGithubFiles(w http.ResponseWriter, r *http.Request) {
 	var respn itmodel.Response
+
+	// Mendapatkan kredensial GitHub dari database
 	gh, err := atdb.GetOneDoc[model.Ghcreates](config.Mongoconn, "github", bson.M{})
 	if err != nil {
 		respn.Info = helper.GetSecretFromHeader(r)
@@ -25,6 +27,7 @@ func GetGithubFiles(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Mendapatkan daftar file dari repositori GitHub
 	content, err := ghupload.GithubListFiles(gh.GitHubAccessToken, "alittifaq", "cdn")
 	if err != nil {
 		respn.Response = err.Error()
@@ -32,8 +35,16 @@ func GetGithubFiles(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	respn.Response = "File list retrieved successfully"
-	respn.Data = content
+	// Mengonversi content ke JSON string
+	contentJSON, err := json.Marshal(content)
+	if err != nil {
+		respn.Response = err.Error()
+		helper.WriteJSON(w, http.StatusInternalServerError, respn)
+		return
+	}
+
+	respn.Info = "Files retrieved successfully"
+	respn.Response = string(contentJSON)
 	helper.WriteJSON(w, http.StatusOK, respn)
 }
 

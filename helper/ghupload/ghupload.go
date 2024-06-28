@@ -11,6 +11,7 @@ import (
 )
 
 func GithubListFiles(GitHubAccessToken, githubOrg, githubRepo string) ([]*github.RepositoryContent, error) {
+	// Konfigurasi koneksi ke GitHub menggunakan token akses
 	ctx := context.Background()
 	ts := oauth2.StaticTokenSource(
 		&oauth2.Token{AccessToken: GitHubAccessToken},
@@ -18,13 +19,13 @@ func GithubListFiles(GitHubAccessToken, githubOrg, githubRepo string) ([]*github
 	tc := oauth2.NewClient(ctx, ts)
 	client := github.NewClient(tc)
 
-	// Get the list of files from the repository
-	_, directoryContents, _, err := client.Repositories.GetContents(ctx, githubOrg, githubRepo, "", nil)
+	// Mendapatkan daftar file dari repositori
+	_, directoryContent, _, err := client.Repositories.GetContents(ctx, githubOrg, githubRepo, "", nil)
 	if err != nil {
 		return nil, err
 	}
 
-	return directoryContents, nil
+	return directoryContent, nil
 }
 
 func GithubUpload(GitHubAccessToken, GitHubAuthorName, GitHubAuthorEmail string, fileHeader *multipart.FileHeader, githubOrg string, githubRepo string, pathFile string, replace bool) (content *github.RepositoryContentResponse, response *github.Response, err error) {
