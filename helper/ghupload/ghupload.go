@@ -2,6 +2,7 @@ package ghupload
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"mime/multipart"
 
@@ -10,7 +11,7 @@ import (
 	"golang.org/x/oauth2"
 )
 
-func GithubListFiles(GitHubAccessToken, githubOrg, githubRepo string) ([]*github.RepositoryContent, error) {
+func GithubListFiles(GitHubAccessToken, githubOrg, githubRepo, path string) ([]*github.RepositoryContent, error) {
 	// Konfigurasi koneksi ke GitHub menggunakan token akses
 	ctx := context.Background()
 	ts := oauth2.StaticTokenSource(
@@ -20,10 +21,13 @@ func GithubListFiles(GitHubAccessToken, githubOrg, githubRepo string) ([]*github
 	client := github.NewClient(tc)
 
 	// Mendapatkan daftar file dari repositori
-	_, directoryContent, _, err := client.Repositories.GetContents(ctx, githubOrg, githubRepo, "", nil)
+	_, directoryContent, _, err := client.Repositories.GetContents(ctx, githubOrg, githubRepo, path, nil)
 	if err != nil {
 		return nil, err
 	}
+
+	// Tambahkan logging untuk melihat data yang dikembalikan
+	fmt.Printf("GithubListFiles: %v\n", directoryContent)
 
 	return directoryContent, nil
 }

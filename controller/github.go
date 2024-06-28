@@ -2,6 +2,7 @@ package controller
 
 import (
 	"encoding/json"
+	"fmt"
 	"mime/multipart"
 	"net/http"
 
@@ -28,12 +29,15 @@ func GetGithubFiles(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Mendapatkan daftar file dari repositori GitHub
-	content, err := ghupload.GithubListFiles(gh.GitHubAccessToken, "alittifaq", "cdn")
+	content, err := ghupload.GithubListFiles(gh.GitHubAccessToken, "alittifaq", "cdn", "img")
 	if err != nil {
 		respn.Response = err.Error()
 		helper.WriteJSON(w, http.StatusInternalServerError, respn)
 		return
 	}
+
+	// Tambahkan logging untuk melihat data yang dikembalikan
+	fmt.Printf("GetGithubFiles: %v\n", content)
 
 	// Mengonversi content ke JSON string
 	contentJSON, err := json.Marshal(content)
