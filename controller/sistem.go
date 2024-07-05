@@ -278,7 +278,7 @@ func GetUser(respw http.ResponseWriter, req *http.Request) {
 
 // GetFeedback mengambil semua feedback dari database dan mengembalikannya sebagai JSON.
 func GetFeedback(respw http.ResponseWriter, req *http.Request) {
-	feedbacks, err := atdb.GetAllDoc[model.Feedback](config.Mongoconn, "feedback", bson.M{})
+	feedbacks, err := atdb.GetAllDoc[[]model.Feedback](config.Mongoconn, "feedback", bson.M{})
 	if err != nil {
 		helper.WriteJSON(respw, http.StatusInternalServerError, err.Error())
 		return
