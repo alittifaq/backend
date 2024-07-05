@@ -49,5 +49,13 @@ func URL(w http.ResponseWriter, r *http.Request) {
 		controller.RegisterHandler(w, r)
 	case method == "POST" && path == "/data/user":
 		controller.GetUser(w, r)
+	case method == "POST" && path == "/data/feedback":
+		controller.PostFeedback(w, r)
+	case method == "GET" && path == "/data/feedback":
+		controller.GetFeedback(w, r)
+	case method == "PUT" && path == "/data/feedback":
+		controller.UpdateFeedback(w, r)
+	case method == "DELETE" && path == "/data/feedback":
+		controller.DeleteFeedback(w, r)
 	}
 }

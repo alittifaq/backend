@@ -28,3 +28,10 @@ type User struct {
 	Email    string             `json:"email" bson:"email" validate:"required,email"`
 	Password string             `json:"password" bson:"password" validate:"required,min=8"`
 }
+
+type Feedback struct {
+	ID      primitive.ObjectID `json:"id,omitempty" bson:"_id,omitempty"`
+	Rating  int                `json:"rating" bson:"rating" validate:"required,min=1,max=5"`
+	Content string             `json:"content" bson:"content" validate:"required"`
+	Sender  string             `json:"sender" bson:"sender" validate:"required"`
+}
