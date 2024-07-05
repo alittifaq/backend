@@ -1,12 +1,9 @@
 package controller
 
 import (
-	"context"
 	"encoding/json"
-	"log"
 	"net/http"
 
-	"github.com/go-playground/validator/v10"
 	"github.com/gocroot/config"
 	"github.com/gocroot/helper"
 	"github.com/gocroot/helper/atdb"
@@ -277,132 +274,118 @@ func GetUser(respw http.ResponseWriter, req *http.Request) {
 	helper.WriteJSON(respw, http.StatusOK, user)
 }
 
-var validate = validator.New()
 
-// PostFeedback menambahkan feedback baru.
-func PostFeedback(w http.ResponseWriter, r *http.Request) {
-	var feedback model.Feedback
 
-	// Decode request body ke struct Feedback
-	err := json.NewDecoder(r.Body).Decode(&feedback)
+// GetFeedback mengambil semua feedback dari database dan mengembalikannya sebagai JSON.
+func GetFeedback(respw http.ResponseWriter, req *http.Request) {
+	feedbacks, err := atdb.GetAllDoc[model.Feedback](config.Mongoconn, "feedback", bson.M{})
 	if err != nil {
-		helper.WriteJSON(w, http.StatusBadRequest, err.Error())
+		helper.WriteJSON(respw, http.StatusInternalServerError, err.Error())
 		return
 	}
-
-	// Validasi struct Feedback
-	err = validate.Struct(feedback)
-	if err != nil {
-		helper.WriteJSON(w, http.StatusBadRequest, err.Error())
-		return
-	}
-
-	feedback.ID = primitive.NewObjectID()
-
-	// Simpan ke database
-	_, err = atdb.InsertOneDoc(config.Mongoconn, "feedback", feedback)
-	if err != nil {
-		helper.WriteJSON(w, http.StatusInternalServerError, err.Error())
-		return
-	}
-
-	w.WriteHeader(http.StatusCreated)
-	helper.WriteJSON(w, http.StatusOK, feedback)
+	helper.WriteJSON(respw, http.StatusOK, feedbacks)
 }
 
-// GetFeedback mengambil semua feedback dari database.
-func GetFeedback(w http.ResponseWriter, r *http.Request) {
-	var feedbacks []model.Feedback
+// GetOneFeedback mengambil satu feedback dari database berdasarkan ID feedback.
+func GetOneFeedback(respw http.ResponseWriter, req *http.Request) {
+	// Ambil parameter ID dari query string
+	id := req.URL.Query().Get("id")
 
-	cursor, err := config.Mongoconn.Collection("feedback").Find(context.Background(), bson.D{})
-	if err != nil {
-		helper.WriteJSON(w, http.StatusInternalServerError, err.Error())
+	if id == "" {
+		helper.WriteJSON(respw, http.StatusBadRequest, "Missing feedback ID")
 		return
 	}
-	defer cursor.Close(context.Background())
 
-	for cursor.Next(context.Background()) {
-		var feedback model.Feedback
-		if err = cursor.Decode(&feedback); err != nil {
-			helper.WriteJSON(w, http.StatusInternalServerError, err.Error())
-			return
+	// Buat filter untuk mencari dokumen dengan ID yang diberikan
+	objID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		helper.WriteJSON(respw, http.StatusBadRequest, "Invalid feedback ID")
+		return
+	}
+
+	filter := bson.M{"_id": objID}
+
+	// Ambil satu dokumen feedback
+	feedback, err := atdb.GetOneDoc[model.Feedback](config.Mongoconn, "feedback", filter)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			helper.WriteJSON(respw, http.StatusNotFound, "Feedback not found")
+		} else {
+			helper.WriteJSON(respw, http.StatusInternalServerError, err.Error())
 		}
-		feedbacks = append(feedbacks, feedback)
-	}
-
-	if err := cursor.Err(); err != nil {
-		helper.WriteJSON(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	helper.WriteJSON(w, http.StatusOK, feedbacks)
+	// Kembalikan dokumen feedback dalam format JSON
+	helper.WriteJSON(respw, http.StatusOK, feedback)
 }
 
-// UpdateFeedback mengupdate feedback berdasarkan ID.
-func UpdateFeedback(w http.ResponseWriter, r *http.Request) {
+// PostFeedback menambahkan feedback baru ke dalam database.
+func PostFeedback(respw http.ResponseWriter, req *http.Request) {
+	var newFeedback model.Feedback
+	if err := json.NewDecoder(req.Body).Decode(&newFeedback); err != nil {
+		helper.WriteJSON(respw, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	newFeedback.ID = primitive.NewObjectID()
+	if _, err := atdb.InsertOneDoc(config.Mongoconn, "feedback", newFeedback); err != nil {
+		helper.WriteJSON(respw, http.StatusInternalServerError, err.Error())
+		return
+	}
+	helper.WriteJSON(respw, http.StatusOK, newFeedback)
+}
+
+// UpdateFeedback mengupdate feedback di database berdasarkan ID feedback.
+func UpdateFeedback(respw http.ResponseWriter, req *http.Request) {
 	var feedback model.Feedback
-
-	// Decode request body ke struct Feedback
-	err := json.NewDecoder(r.Body).Decode(&feedback)
+	err := json.NewDecoder(req.Body).Decode(&feedback)
 	if err != nil {
-		helper.WriteJSON(w, http.StatusBadRequest, err.Error())
+		helper.WriteJSON(respw, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	// Validasi struct Feedback
-	err = validate.Struct(feedback)
-	if err != nil {
-		helper.WriteJSON(w, http.StatusBadRequest, err.Error())
+	// Validasi bahwa ID feedback tidak boleh kosong
+	if feedback.ID == primitive.NilObjectID {
+		helper.WriteJSON(respw, http.StatusBadRequest, "ID feedback tidak boleh kosong")
 		return
 	}
 
-	// Dapatkan koleksi "feedback" dari MongoDB
-	collection := config.Mongoconn.Collection("feedback")
-	// Tentukan filter berdasarkan ID feedback
+	// Definisikan filter untuk menemukan feedback berdasarkan ID feedback
 	filter := bson.M{"_id": feedback.ID}
 
-	// Tentukan operasi update dengan mengatur data baru
-	update := bson.M{"$set": feedback}
+	// Definisikan update dengan set data baru
+	update := bson.M{
+		"$set": bson.M{
+			"rating":  feedback.Rating,
+			"content": feedback.Content,
+			"sender":  feedback.Sender,
+		},
+	}
 
-	// Lakukan operasi UpdateOne untuk mengupdate dokumen di MongoDB
-	_, err = collection.UpdateOne(context.Background(), filter, update)
-	if err != nil {
-		helper.WriteJSON(w, http.StatusInternalServerError, err.Error())
+	// Update feedback di MongoDB
+	if _, err := atdb.UpdateDoc(config.Mongoconn, "feedback", filter, update); err != nil {
+		helper.WriteJSON(respw, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	helper.WriteJSON(w, http.StatusOK, feedback)
+	// Kirim respons sukses
+	helper.WriteJSON(respw, http.StatusOK, feedback)
 }
 
-// DeleteFeedback menghapus feedback berdasarkan ID.
-func DeleteFeedback(w http.ResponseWriter, r *http.Request) {
-	idStr := r.URL.Query().Get("id")
-	id, err := primitive.ObjectIDFromHex(idStr)
-	if err != nil {
-		helper.WriteJSON(w, http.StatusBadRequest, err.Error())
+// DeleteFeedback menghapus feedback dari database berdasarkan ID feedback.
+func DeleteFeedback(respw http.ResponseWriter, req *http.Request) {
+	var feedback model.Feedback
+	if err := json.NewDecoder(req.Body).Decode(&feedback); err != nil {
+		helper.WriteJSON(respw, http.StatusBadRequest, err.Error())
 		return
 	}
-
-	// Dapatkan koleksi "feedback" dari MongoDB
-	collection := config.Mongoconn.Collection("feedback")
-
-	// Tentukan filter berdasarkan ID feedback
-	filter := bson.M{"_id": id}
-
-	// Lakukan operasi DeleteOne untuk menghapus dokumen di MongoDB
-	_, err = collection.DeleteOne(context.Background(), filter)
+	filter := bson.M{"_id": feedback.ID}
+	err := atdb.DeleteOneDoc(config.Mongoconn, "feedback", filter)
 	if err != nil {
-		helper.WriteJSON(w, http.StatusInternalServerError, err.Error())
+		helper.WriteJSON(respw, http.StatusInternalServerError, err.Error())
 		return
 	}
-
-	w.WriteHeader(http.StatusNoContent)
+	helper.WriteJSON(respw, http.StatusOK, "Feedback berhasil dihapus")
 }
 
-
-func init() {
-	// Check if MongoDB connection error exists during initialization
-	if config.ErrorMongoconn != nil {
-		log.Fatal(config.ErrorMongoconn)
-	}
-}
