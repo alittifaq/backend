@@ -58,6 +58,13 @@ func PostProduk(respw http.ResponseWriter, req *http.Request) {
 		return
 	}
 	newProduk.ID = primitive.NewObjectID()
+
+	// Validasi kategori
+	if newProduk.Kategori == "" {
+		helper.WriteJSON(respw, http.StatusBadRequest, "Kategori produk tidak boleh kosong, sayur/buah/olahan")
+		return
+	}
+
 	if _, err := atdb.InsertOneDoc(config.Mongoconn, "product", newProduk); err != nil {
 		helper.WriteJSON(respw, http.StatusInternalServerError, err.Error())
 		return
@@ -87,6 +94,7 @@ func UpdateProduct(respw http.ResponseWriter, req *http.Request) {
 		"$set": bson.M{
 			"foto": product.Foto,
 			"nama": product.Nama,
+			"kategori": product.Kategori,
 		},
 	}
 
