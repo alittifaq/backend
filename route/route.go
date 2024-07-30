@@ -25,14 +25,6 @@ func URL(w http.ResponseWriter, r *http.Request) {
 		controller.GetOneGallery(w, r)
 	case method == "GET" && path == "/data/product/detail":
 		controller.GetOneProduk(w, r)
-	case method == "POST" && helper.URLParam(path, "/upload/:path"):
-		controller.PostUploadGithub(w, r)
-	case method == "GET" && helper.URLParam(path, "/files"):
-		controller.GetGithubFiles(w, r)
-	case method == "PUT" && helper.URLParam(path, "/file/:path"):
-		controller.UpdateGithubFile(w, r)
-	case method == "DELETE" && helper.URLParam(path, "/file/:path"):
-		controller.DeleteGithubFile(w, r)
 	case method == "POST" && path == "/data/product":
 		controller.PostProduk(w, r)
 	case method == "POST" && path == "/data/gallery":
@@ -59,5 +51,13 @@ func URL(w http.ResponseWriter, r *http.Request) {
 		controller.UpdateFeedback(w, r)
 	case method == "DELETE" && path == "/data/feedback":
 		controller.DeleteFeedback(w, r)
+	case method == "POST" && helper.URLParam(path, "/upload/:path"):
+		controller.PostUploadGithub(w, r)
+	case method == "GET" && helper.URLParam(path, "/files"):
+		controller.GetGithubFiles(w, r)
+	case method == "PUT" && helper.URLParam(path, "/file/:path"):
+		controller.UpdateGithubFile(w, r)
+	case method == "DELETE" && helper.URLParam(path, "/file/:path"):
+		controller.DeleteGithubFile(w, r)
 	}
 }
