@@ -126,11 +126,19 @@ func DeleteProduk(respw http.ResponseWriter, req *http.Request) {
 
 // GetGallery mengambil semua item galeri dari database dan mengembalikannya sebagai JSON.
 func GetGallery(respw http.ResponseWriter, req *http.Request) {
+	// Set header CORS
+	if config.SetAccessControlHeaders(respw, req) {
+		return
+	}
+
+	// Ambil data dari database
 	gallery, err := atdb.GetAllDoc[[]model.Gallery](config.Mongoconn, "gallery", bson.M{})
 	if err != nil {
 		helper.WriteJSON(respw, http.StatusInternalServerError, err.Error())
 		return
 	}
+
+	// Kembalikan data dalam format JSON
 	helper.WriteJSON(respw, http.StatusOK, gallery)
 }
 

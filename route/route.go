@@ -10,6 +10,7 @@ import (
 
 // URL mengarahkan permintaan HTTP masuk ke fungsi controller yang tepat.
 func URL(w http.ResponseWriter, r *http.Request) {
+	// Tangani preflight request dan tambahkan header CORS
 	if config.SetAccessControlHeaders(w, r) {
 		return // Jika ini adalah permintaan preflight, kembalikan segera.
 	}
